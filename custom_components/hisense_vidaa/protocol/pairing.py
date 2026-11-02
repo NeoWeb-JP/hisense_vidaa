@@ -109,6 +109,17 @@ async def async_start_pairing_handshake(client: HisenseTvClient) -> None:
         client.update_topic_paths()
         return
 
+    # Refresh OEM metadata before deriving credentials, including manual setup
+    # and discovery cards cached before brand support was installed.
+    fingerprint = {}
+    try:
+        fingerprint = await client.async_get_device_fingerprint(1.5)
+        discovered_brand = fingerprint.get("brand")
+        if isinstance(discovered_brand, str) and discovered_brand.strip():
+            client.brand = discovered_brand.strip().lower()
+    except Exception as error:
+        _LOGGER.debug("[%s] Could not refresh pairing metadata: %s", client.ip, error)
+
     profile = getattr(client, "auth_profile", "auto")
     if profile in ("modern", "vidaa_2024", "vidaa"):
         await client._async_start_auth_internal(profile="modern")
@@ -120,7 +131,6 @@ async def async_start_pairing_handshake(client: HisenseTvClient) -> None:
         profiles_to_try = ["modern", "middle", "remotenow"]
         if getattr(client, "ip", None):
             try:
-                fingerprint = await client.async_get_device_fingerprint(1.0)
                 transport_protocol = fingerprint.get("transport_protocol")
                 if transport_protocol:
                     with contextlib.suppress(ValueError, TypeError):
@@ -160,7 +170,10 @@ async def async_start_pairing_handshake(client: HisenseTvClient) -> None:
                     continue
                 raise
         if last_error:
-            raise last_error
+            raise Exception(
+                f"{last_error}; pairing brand={getattr(client, 'brand', 'his')}, "
+                f"profiles={','.join(profiles_to_try)}"
+            ) from last_error
 
 
 async def _async_execute_pairing_attempt(
@@ -173,6 +186,12 @@ async def _async_execute_pairing_attempt(
     tv_timestamp = await client.upnp.async_get_tv_timestamp(1.5)
     client.derive_pairing_credentials(
         use_new_auth=use_new_auth, auth_profile=profile, timestamp=tv_timestamp
+    )
+
+    _LOGGER.debug(
+        "[%s] Pairing attempt: brand=%s, profile=%s, clock_source=%s",
+        client.ip, getattr(client, "brand", "his"), profile,
+        "device" if tv_timestamp is not None else "local",
     )
 
     # Raises the CONNACK rejection immediately so the profile cascade can fall back.
