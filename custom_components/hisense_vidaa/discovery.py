@@ -37,6 +37,7 @@ GENERIC_MANUFACTURERS: set[str] = {
 }
 
 BRAND_MAP: dict[str, str] = {
+    "tpo": "TOPTRO",
     "his": "Hisense",
     "hisense": "Hisense",
     "tos": "Toshiba",
@@ -86,6 +87,7 @@ class DiscoveredTvInfo:
     mac_address: str | None = None
     unique_id: str | None = None
     is_vidaa: bool = True
+    brand: str = "his"
 
 
 def parse_ssdp_discovery(
@@ -115,6 +117,13 @@ def parse_ssdp_discovery(
 
     if not host:
         return None
+
+    brand = "his"
+    for line in model_desc.splitlines():
+        key, sep, value = line.partition("=")
+        if sep and key.strip().lower() == "brand" and value.strip():
+            brand = value.strip().lower()
+            break
 
     mac_address = None
     for line in model_desc.splitlines():
@@ -156,6 +165,7 @@ def parse_ssdp_discovery(
         title=title,
         model=model,
         manufacturer=manufacturer or "Hisense",
+        brand=brand,
         mac_address=mac_address,
         unique_id=unique_id,
         is_vidaa=True,
