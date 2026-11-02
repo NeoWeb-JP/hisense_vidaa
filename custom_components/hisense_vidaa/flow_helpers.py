@@ -226,6 +226,7 @@ def collect_client_auth_data(
         data[CONF_MAC_ADDRESS] = mac_address
     if client:
         data.update({
+            "brand": getattr(client, "brand", "his"),
             CONF_CLIENT_ID: client.client_id,
             CONF_USERNAME: client.username,
             CONF_PASSWORD: client.password,
