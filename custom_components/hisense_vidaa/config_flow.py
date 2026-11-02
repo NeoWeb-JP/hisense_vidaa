@@ -58,6 +58,7 @@ class HisenseVidaaConfigFlow(
     def __init__(self) -> None:
         self.ip_address: str | None = None
         self.mac_address: str | None = None
+        self.brand: str = "his"
         self.auth_profile: str = DEFAULT_AUTH_PROFILE
         self.certfile: str | None = None
         self.keyfile: str | None = None
@@ -142,6 +143,7 @@ class HisenseVidaaConfigFlow(
             self.ip_address,
             self.mac_address,
             auth_profile=self.auth_profile,
+            brand=self.brand,
             certfile=self.certfile if self.use_ssl else None,
             keyfile=self.keyfile if self.use_ssl else None,
             use_ssl=self.use_ssl,
@@ -257,7 +259,8 @@ class HisenseVidaaConfigFlow(
                 self.client = HisenseTvClient(
                     self.ip_address,
                     self.mac_address,
-                    auth_profile=self.auth_profile,
+                    brand=self.brand,
+                auth_profile=self.auth_profile,
                     session=session,
                 )
                 self.client._loop = self.hass.loop
