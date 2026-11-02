@@ -82,6 +82,7 @@ class ReauthFlowMixin:
         self._reauth_entry = self.hass.config_entries.async_get_entry(
             self.context["entry_id"]
         )
+        self.brand = entry_data.get("brand", "his")
         self.ip_address = entry_data[CONF_IP_ADDRESS]
         self.mac_address = entry_data.get(CONF_MAC_ADDRESS)
         if not self.mac_address and self.ip_address:
@@ -112,6 +113,7 @@ class ReauthFlowMixin:
                 self.ip_address,
                 self.mac_address,
                 auth_profile=self.auth_profile,
+                brand=self.brand,
                 certfile=self.certfile if self.use_ssl else None,
                 keyfile=self.keyfile if self.use_ssl else None,
                 use_ssl=self.use_ssl,
@@ -147,6 +149,7 @@ class ReauthFlowMixin:
         )
         errors: dict[str, str] = {}
         current_data = self._reauth_entry.data if self._reauth_entry else {}
+        self.brand = current_data.get("brand", "his")
         default_ip = current_data.get(CONF_IP_ADDRESS, "")
         default_profile = current_data.get(CONF_AUTH_PROFILE, DEFAULT_AUTH_PROFILE)
 
