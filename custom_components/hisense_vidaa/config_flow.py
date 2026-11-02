@@ -207,6 +207,7 @@ class HisenseVidaaConfigFlow(
         """Handle manual user IP configuration step."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            self.brand = user_input.get("brand", self.brand).strip().lower() or "his"
             self.ip_address = user_input[CONF_IP_ADDRESS]
             self.auth_profile = user_input.get(CONF_AUTH_PROFILE, DEFAULT_AUTH_PROFILE)
             self.mac_address = await async_resolve_mac(self.hass, self.ip_address)
@@ -231,6 +232,7 @@ class HisenseVidaaConfigFlow(
             step_id="user",
             data_schema=vol.Schema({
                 vol.Required(CONF_IP_ADDRESS): str,
+                vol.Optional("brand", default=self.brand): str,
                 vol.Optional(
                     CONF_AUTH_PROFILE, default=DEFAULT_AUTH_PROFILE
                 ): AUTH_PROFILE_SELECTOR,
