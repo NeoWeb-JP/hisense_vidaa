@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+
+import voluptuous as vol
 from typing import TYPE_CHECKING, Any
 
 from homeassistant import config_entries
@@ -72,6 +74,7 @@ class DiscoveryFlowMixin:
         """Confirm discovery setup with user."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            self.brand = user_input.get("brand", self.brand).strip().lower() or "his"
             if await self._async_resolve_ssl_certs():
                 try:
                     return await self._async_init_client_and_auth()
@@ -91,6 +94,7 @@ class DiscoveryFlowMixin:
 
         return self.async_show_form(
             step_id="discovery_confirm",
+            data_schema=vol.Schema({vol.Optional("brand", default=self.brand): str}),
             description_placeholders={
                 "name": self.discovered_title or self.ip_address or "Hisense TV",
                 "ip_address": self.ip_address or "",
