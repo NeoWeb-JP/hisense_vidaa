@@ -117,6 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HisenseVidaaConfigEntry)
     client = HisenseTvClient(
         ip=data[CONF_IP_ADDRESS],
         mac=mac,
+        brand=data.get("brand", "his"),
         client_id=data.get(CONF_CLIENT_ID),
         username=data.get(CONF_USERNAME),
         password=data.get(CONF_PASSWORD),
